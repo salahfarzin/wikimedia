@@ -18,13 +18,13 @@
 	"scripts": {
 		"lint": "phpcs",
 		"phpcbf": "phpcbf",
-		"serve": "php -S localhost:8989",
+		"serve": "php -S 0.0.0.0:8989 -t public/",
 		"phpunit": "phpunit tests/phpunit",
 		"test": [
 			"@lint",
 			"@phpunit"
 		],
-		"seed": "php seedContent.php"
+		"seed": "php cli/seedContent.php"
 	},
 	"config": {
 		"process-timeout": 0

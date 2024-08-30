@@ -1,0 +1,63 @@
+/*
+* TODO B: Ensure that the page is responsive for tablet and mobile.
+*/
+
+.header, .main {
+	padding-left: 16px;
+	padding-right: 16px;
+	line-height: normal;
+}
+
+.header {
+	display: flex;
+	padding: 20px;
+}
+
+.header a {
+	flex: 1;
+}
+
+.page {
+	display: flex;
+	justify-content: center;
+	min-height: 100vh;
+}
+
+.page h2 {
+	text-align: center;
+}
+
+.page p {
+	margin-bottom: 15px;
+}
+
+.page .main {
+	width: 50%;
+}
+
+.page .form-group {
+	margin-top: 15px;
+}
+
+.form-group input, .form-group textarea {
+	padding: 7px;
+	width: 100%;
+}
+.form-group textarea {
+	min-height: 300px;
+}
+
+.page form .submit-button {
+	display: inline-block;
+	cursor: pointer;
+	text-align: center;
+	margin-top: 15px;
+	width: 100%;
+	padding: 15px;
+	color: white;
+	text-decoration: none;
+	background-color: #36c;
+}
+.page .form-group {
+	position: relative;
+}
