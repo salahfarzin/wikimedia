@@ -2,29 +2,77 @@
 
 namespace App;
 
-// TODO: Improve the readability of this file through refactoring and documentation.
-
-require_once dirname( __DIR__ ) . '/globals.php';
+use DirectoryIterator;
 
 class App {
 
-	public function save( $ttl, $bd ) {
-		error_log( "Saving article $ttl, success!" );
-		file_put_contents( $ttl, $bd );
+	/**
+	 * @param string $stoarageBasePath
+	 */
+	public function __construct( private string $stoarageBasePath ) {
+		$this->stoarageBasePath = $this->stoarageBasePath;
 	}
 
-	public function update( $ttl, $bd ) {
-		$this->save( $ttl, $bd );
+	/**
+	 * Create/Update an article
+	 * Better to have a  storage class to handle the locations (HardDisk/S3/GoogleDrive/...)
+	 *
+	 * @param string $path
+	 * @param string $contents
+	 *
+	 * @return string
+	 */
+	public function save( string $path, string $contents ): string {
+		file_put_contents( $path, $contents );
+
+		return sprintf( 'Saving article %s, success!', $path );
 	}
 
-	public function fetch( $get ) {
-		$title = $get['title'] ?? null;
-		return is_array( $get ) ? file_get_contents( sprintf( 'articles/%s', $get['title'] ) ) :
-			file_get_contents( sprintf( 'articles/%s', $_GET['title'] ) );
+	/**
+	 * Load Article Content by filename
+	 *
+	 * @param array $request
+	 *
+	 * @return string
+	 */
+	public function loadContent( array $request ): string {
+		$filename = $request['title'] ?? null;
+		$path = sprintf( '%s/%s', $this->stoarageBasePath, $filename );
+
+		$content = '';
+		if ( file_exists( $path ) ) {
+			$content = file_get_contents( $path );
+		}
+
+		return $content;
 	}
 
-	public function getListOfArticles() {
-		global $wgBaseArticlePath;
-		return array_diff( scandir( $wgBaseArticlePath ), [ '.', '..', '.DS_Store' ] );
+	/**
+	 * Load articles list
+	 *
+	 * @return array|false
+	 */
+	public function loadList() {
+		return array_diff( scandir( $this->stoarageBasePath ), [ '.', '..', '.DS_Store' ] );
+	}
+
+	/**
+	 * word count have performance issue as it load the whole content of file in memory at once
+	 *
+	 * @return string
+	 */
+	public function calculateWordCount(): string {
+		$wc = 0;
+		$dir = new DirectoryIterator( BASE_ARTICLE_PATH );
+
+		foreach ( $dir as $fileinfo ) {
+			if ( $fileinfo->isDot() ) {
+				continue;
+			}
+			$c = file_get_contents( BASE_ARTICLE_PATH . $fileinfo->getFilename() );
+			$ch = explode( " ", $c );
+			$wc += count( $ch );
+		}
+		return "$wc words written";
 	}
 }
