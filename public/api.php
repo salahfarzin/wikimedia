@@ -9,7 +9,6 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'boots
 $app = new App( new StorageService( BASE_ARTICLE_PATH ), new SanitizerService() );
 
 /**
- * TODO D: Identify any potential security vulnerabilities in this code.
  * TODO E: Document this code to make it more understandable for other developers.
  */
 
@@ -21,6 +20,7 @@ $app = new App( new StorageService( BASE_ARTICLE_PATH ), new SanitizerService() 
 header( 'Content-Type: application/json' );
 http_response_code( 200 );
 
+// Using $_GET/$_POST can cause security issues better to define or use Request class
 if ( !empty( $_GET['word-count'] ) ) {
 	$content = $app->calculateWordCount();
 } else {

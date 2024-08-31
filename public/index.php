@@ -1,8 +1,6 @@
 <?php
 
 /**
- * TODO D: The list of available articles is hardcoded. Add code to get a
- * dynamically generated list.
  * TODO E: Are there performance problems with the word count function? How
  * could you optimize this to perform well with large amounts of data? Code
  * comments / psuedo-code welcome.
