@@ -8,10 +8,6 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'boots
 
 $app = new App( new StorageService( BASE_ARTICLE_PATH ), new SanitizerService() );
 
-/**
- * TODO E: Document this code to make it more understandable for other developers.
- */
-
 // Consider a Rate Limiter to prevent DDoS attacks by blocking or delaying requests from a single IP address
 // It can be either adjusted on Nginx/Proxy server
 
@@ -19,6 +15,9 @@ $app = new App( new StorageService( BASE_ARTICLE_PATH ), new SanitizerService() 
 // Best practices: have a version in the api url like api/v1 and better move response to the controller (App)
 header( 'Content-Type: application/json' );
 http_response_code( 200 );
+
+// API must have an authentication endpoint
+// Token must be provided by each request otherwise 401(Unauthorized) response
 
 // Using $_GET/$_POST can cause security issues better to define or use Request class
 if ( !empty( $_GET['word-count'] ) ) {

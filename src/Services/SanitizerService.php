@@ -23,4 +23,15 @@ class SanitizerService {
 
 		return str_replace( '.' . $extension, '', $filename );
 	}
+
+	/**
+	 * Escape html chars
+	 *
+	 * @param string $html
+	 *
+	 * @return string
+	 */
+	public function escapeHtml( string $html ): string {
+		return htmlentities( $html );
+	}
 }

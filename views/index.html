@@ -21,6 +21,7 @@
 			in the text field.
 		</p>
 		<form action="index.php" method="post">
+			<input type="hidden" name="token" value="<?php echo $csrfToken ?>">
 			<div class="form-group">
 				<input name="title" class="auto-complete" type="text" placeholder="Article title..." value="<?php echo $title ?>">
 			</div>
@@ -29,6 +30,7 @@
 				<textarea name="body" placeholder="Article body..."><?php echo $body ?></textarea>
 			</div>
 
+			<!-- Security issue: Captcha not provided -->
 			<button type="submit" class="submit-button">Submit</button>
 			<br>
 		</form>
@@ -41,6 +43,7 @@
 		<div class="article-list-container"></div>
 	</section>
 </main>
+<!-- CSP should be considered -->
 <script src="/assets/main.js" defer></script>
 </body>
 </html>

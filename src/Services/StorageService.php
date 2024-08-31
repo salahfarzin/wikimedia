@@ -31,7 +31,7 @@ class StorageService {
 
 		$file = new SplFileObject( $path );
 
-		$content = 0;
+		$content = '';
 		while ( !$file->eof() ) {
 			$content .= $file->fgets();
 		}
@@ -40,16 +40,33 @@ class StorageService {
 	}
 
 	/**
+	 * Remove a file
+	 *
+	 * @param string $filename
+	 *
+	 * @return bool
+	 */
+	public function removeFile( string $filename ): bool {
+		$path = $this->basePath . $filename;
+		if ( !file_exists( $path ) ) {
+			throw new NotFoundException( sprintf( 'file %s not found', $path ) );
+		}
+
+		return unlink( $path );
+	}
+
+	/**
 	 * Store a file
 	 *
 	 * @param string $filename
 	 * @param string $content
-	 * @return void
+	 *
+	 * @return int|false
 	 */
-	public function putFile( string $filename, string $content ): void {
+	public function putFile( string $filename, string $content ): int|false {
 		$path = $this->basePath . $filename;
 
-		file_put_contents( $path, $content );
+		return file_put_contents( $path, $content );
 	}
 
 	/**

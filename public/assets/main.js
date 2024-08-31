@@ -5,9 +5,6 @@
  *  following as we want to keep the JS payload as small as possible. You may
  *  use ES6. There is no need to support IE11.
  *
- *  TODO E: Figure out how to make multiple requests to the server as the user
- *  scrolls through the autocomplete list.
- *
  *  TODO F: Add error-handling requirements, such as displaying error messages
  *  to the user when API requests fail and provide a graceful degradation of
  *  functionality.
@@ -139,6 +136,26 @@ class AutoComplete {
 		document.querySelector('textarea[name=body]').value = data.content;
 		el.closest('.auto-complete-list').remove();
 	}
+
+	/**
+	 * Handle auto complete to load more by scrolling each time
+	 * it uses the last date to load for last certain days
+	 * it might not work correct, the time wasn't enough
+	 *
+	 * @param event
+	 * @param input
+	 * @returns {Promise<void>}
+	 */
+	async onListItemsScroll(event, input	) {
+		const element = event.target;
+		if (element.scrollTop + element.clientHeight >= element.scrollHeight - 20) {
+			const lastListItem = document.querySelector('.auto-complete-list li:last-child');
+			const fromDate = lastListItem.dataset.modifiedAt;
+
+			const res = await this.fetchRemote(event, input, fromDate);
+			this.appendItemsToList(input, res);
+		}
+	}
 }
 
 
@@ -160,6 +177,14 @@ class Main {
 	initAutoComplete() {
 		document.querySelectorAll('input.auto-complete').forEach((input) => {
 			input.addEventListener('keyup', (event) => autoComplete.init(event, 200));
+			input.addEventListener('blur', (event) => {
+				if (event.explicitOriginalTarget
+					&& event.explicitOriginalTarget.closest('.auto-complete-list')
+				) {
+					return;
+				}
+				document.querySelectorAll('.auto-complete-list').forEach(el => el.remove());
+			});
 		});
 	}
 
@@ -185,8 +210,14 @@ class Main {
 	 */
 	async fetchArticles() {
 		const articleContainer = document.querySelector('.article-list-container');
+		const lastListItem = articleContainer.querySelector('li:last-child');
 
-		const res =  await httpClient.request('?search=');
+		let fromDate = '?from-date=';
+		if (lastListItem) {
+			fromDate += lastListItem.dataset.modifiedAt ? lastListItem.dataset.modifiedAt : '';
+		}
+
+		const res =  await httpClient.request(fromDate);
 		if (!res.ok) {
 			throw new Error('whoops something went wrong: ' + res.statusText);
 		}

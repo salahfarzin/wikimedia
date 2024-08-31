@@ -3,6 +3,7 @@
 namespace App;
 
 use App\Services\Exceptions\NotFoundException;
+use App\Services\RecentArticlesFilter;
 use App\Services\SanitizerService;
 use App\Services\StorageService;
 use DirectoryIterator;
@@ -31,7 +32,7 @@ class App {
 	public function save( string $filename, string $contents ): string {
 		$filename = $this->sanitizerService->sanitizeFilename( $filename );
 
-		$this->storageService->putFile( $filename, $contents );
+		$this->storageService->putFile( $filename, $this->sanitizerService->escapeHtml( $contents ) );
 
 		return sprintf( 'Saving article %s, success!', $filename );
 	}
@@ -63,11 +64,20 @@ class App {
 	 * @return array
 	 */
 	public function loadList( array $request ): array {
-		$searchKeyword = trim( $request['search'] );
+		$searchKeyword = trim( $request['search'] ?? '' );
+		$fromDate = !empty( $request['from-date'] ) ? $request['fromDate'] : time();
+		$basePath = $this->storageService->getBasePath();
+
+		// fetch articles list of last certain days
+		// better to adjust day limit back to last week with large data but maybe 30 days also makes sense
+		$dayLimit = 365;
+		$fromDate = date_create( date( 'Y-m-d', $fromDate ) )->modify( "-$dayLimit days" );
 
 		$articles = [];
-		foreach ( new DirectoryIterator( $this->storageService->getBasePath() ) as $file ) {
-			if ( $file->isDot() || !str_contains( strtolower( $file->getFilename() ), strtolower( $searchKeyword ) ) ) {
+		foreach ( new RecentArticlesFilter( new DirectoryIterator( $basePath ), $fromDate ) as $file ) {
+			if ( $file->isDot()
+				|| !str_contains( strtolower( $file->getFilename() ), strtolower( $searchKeyword ) )
+			) {
 				continue;
 			}
 
@@ -78,7 +88,8 @@ class App {
 	}
 
 	/**
-	 * word count have performance issue as it load the whole content of file in memory at once
+	 * word count had performance issue by loading the whole file at one in a foreach it optimized by reading
+	 * line by line and counting the word, but it can be more optimize by using Generator to avoid waste memory
 	 *
 	 * @return int
 	 */
