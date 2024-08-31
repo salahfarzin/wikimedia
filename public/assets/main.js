@@ -5,10 +5,6 @@
  *  following as we want to keep the JS payload as small as possible. You may
  *  use ES6. There is no need to support IE11.
  *
- *  TODO D: The autocomplete list should only be shown when the input receives
- *  focus. The list should be hidden after the user selects an item from the
- *  list or after the input loses focus.
- *
  *  TODO E: Figure out how to make multiple requests to the server as the user
  *  scrolls through the autocomplete list.
  *
@@ -154,6 +150,7 @@ class Main {
 	init() {
 		this.initAutoComplete();
 		this.fetchArticlesWordCount();
+		this.fetchArticles();
 	}
 
 	/**
@@ -181,6 +178,37 @@ class Main {
 		}
 
 		document.querySelector('.articles-word-count').innerText = data.content;
+	}
+
+	/**
+	 * Fetch articles list from remote API
+	 */
+	async fetchArticles() {
+		const articleContainer = document.querySelector('.article-list-container');
+
+		const res =  await httpClient.request('?search=');
+		if (!res.ok) {
+			throw new Error('whoops something went wrong: ' + res.statusText);
+		}
+
+		const data = await res.json();
+		if (!data.content.length) {
+			return;
+		}
+
+		const articlesHolderElement = document.createElement('ul');
+		data.content.forEach((item) => {
+			const listElement = document.createElement('li');
+			const anchorElement = document.createElement('a');
+
+			anchorElement.href = 'index.php?title=' +  item.title;
+			anchorElement.innerText = item.title;
+			anchorElement.dataset.modifiedAt = item.modifiedAt;
+
+			listElement.appendChild(anchorElement);
+			articlesHolderElement.appendChild(listElement);
+		});
+		articleContainer.appendChild(articlesHolderElement)
 	}
 }
 
