@@ -32,7 +32,7 @@ class App {
 	public function save( string $filename, string $contents ): string {
 		$filename = $this->sanitizerService->sanitizeFilename( $filename );
 
-		$this->storageService->putFile( $filename, $contents );
+		$this->storageService->putFile( $filename, htmlspecialchars($contents) );
 
 		return sprintf( 'Saving article %s, success!', $filename );
 	}

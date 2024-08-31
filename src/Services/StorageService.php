@@ -44,12 +44,12 @@ class StorageService {
 	 *
 	 * @param string $filename
 	 * @param string $content
-	 * @return void
+	 * @return int|false
 	 */
-	public function putFile( string $filename, string $content ): void {
+	public function putFile( string $filename, string $content ): int|false {
 		$path = $this->basePath . $filename;
 
-		file_put_contents( $path, $content );
+		return file_put_contents( $path, $content );
 	}
 
 	/**
