@@ -1,33 +1,46 @@
+<!doctype html>
+<html lang="en">
 <head>
-	<link rel='stylesheet' href='http://design.wikimedia.org/style-guide/css/build/wmui-style-guide.min.css'>
-	<link rel='stylesheet' href='styles.css'>
-	<script src='main.js'></script>
+	<meta charset="UTF-8">
+	<title>Wikimedia</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="http://design.wikimedia.org/style-guide/css/build/wmui-style-guide.min.css">
+	<link rel="stylesheet" href="/assets/styles.css">
 </head>
 <body>
-<div id=header class=header>
-	<a href='/'>Article editor</a>
-	<div>$wordCount</div>
-</div>
-<div class='page'>
-	<div class='main'><h2>Create/Edit Article</h2>
-		<p>Create a new article by filling out the fields below. Edit an article by typing the beginning of the title in
-			the title field, selecting the title from the auto-complete list, and changing the text in the
-			textfield.</p>
-		<form action='index.php' method='post'>
-			<input name='title' type='text' placeholder='Article title...' value=$title>
-			<br/>
-			<textarea name='body' placeholder='Article body...'>$body</textarea>
-			<br/>
-			<a class='submit-button' href='#'/>Submit</a>
-			<br/>
-			<h2>Preview</h2>
-			$title\n\n
-			$body
-			<h2>Articles</h2>
-			<ul>
-				<li><a href='index.php?title=Foo'>Foo</a></li>
-			</ul>
+<header class="header">
+	<a href="/">Article editor</a>
+	<div><?php echo $wordCount ?> words written</div>
+</header>
+<main class="page">
+	<section class="main">
+		<h2>Create/Edit Article</h2>
+		<p>
+			Create a new article by filling out the fields below. Edit an article by typing the beginning of
+			the title in the title field, selecting the title from the auto-complete list, and changing the text
+			in the text field.
+		</p>
+		<form action="index.php" method="post">
+			<div class="form-group">
+				<input name="title" class="auto-complete" type="text" placeholder="Article title..." value="<?php echo $title ?>">
+			</div>
+
+			<div class="form-group">
+				<textarea name="body" placeholder="Article body..."><?php echo $body ?></textarea>
+			</div>
+
+			<button type="submit" class="submit-button">Submit</button>
+			<br>
 		</form>
-	</div>
-</div>
+
+		<h2>Preview</h2>
+		<?php echo $title ?>
+		<?php echo $body ?>
+
+		<h2>Articles</h2>
+		<div class="article-list-container"></div>
+	</section>
+</main>
+<script src="/assets/main.js" defer></script>
 </body>
+</html>
