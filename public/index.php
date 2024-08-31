@@ -1,12 +1,5 @@
 <?php
 
-/**
- * TODO E: Are there performance problems with the word count function? How
- * could you optimize this to perform well with large amounts of data? Code
- * comments / psuedo-code welcome.
- * TODO F (optional): Implement a unit test that operates on part of App.php
- */
-
 use App\App;
 use App\Services\SanitizerService;
 use App\Services\StorageService;
@@ -28,6 +21,9 @@ if ( isset( $_GET['title'] ) ) {
 if ( $_POST ) {
 	$app->save( $_POST['title'], $_POST['body'] );
 }
+
+// word count moved from the main thread to the api to load async and not block the main thread
+// some optimization already applied, please check App::calculateWordCount docs
 
 // views can be handled by view manager
 require_once __DIR__ . '/../views/index.html';
