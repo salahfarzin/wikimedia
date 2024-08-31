@@ -7,10 +7,9 @@ use DirectoryIterator;
 class App {
 
 	/**
-	 * @param string $stoarageBasePath
+	 * @param string $storagePath
 	 */
-	public function __construct( private string $stoarageBasePath ) {
-		$this->stoarageBasePath = $this->stoarageBasePath;
+	public function __construct( private string $storagePath ) {
 	}
 
 	/**
@@ -37,7 +36,7 @@ class App {
 	 */
 	public function loadContent( array $request ): string {
 		$filename = $request['title'] ?? null;
-		$path = sprintf( '%s/%s', $this->stoarageBasePath, $filename );
+		$path = sprintf( '%s/%s', $this->storagePath, $filename );
 
 		$content = '';
 		if ( file_exists( $path ) ) {
@@ -50,10 +49,23 @@ class App {
 	/**
 	 * Load articles list
 	 *
-	 * @return array|false
+	 * @param array $request
+	 *
+	 * @return array
 	 */
-	public function loadList() {
-		return array_diff( scandir( $this->stoarageBasePath ), [ '.', '..', '.DS_Store' ] );
+	public function loadList( array $request ): array {
+		$searchPrefix = trim( $request['prefixsearch'] );
+
+		$articles = [];
+		foreach ( new DirectoryIterator( $this->storagePath ) as $file ) {
+			if ( $file->isDot() || !str_contains( strtolower( $file->getFilename() ), strtolower( $searchPrefix ) ) ) {
+				continue;
+			}
+
+			$articles[] = [ 'title' => $file->getFilename(), 'modifiedAt' => $file->getMTime() ];
+		}
+
+		return $articles;
 	}
 
 	/**

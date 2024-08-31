@@ -1,8 +1,6 @@
 <?php
 
 /**
- * TODO B: Review the HTML structure and make sure that it is valid and contains
- * required elements. Edit and re-organize the HTML as needed.
  * TODO C: Review the index.php entrypoint for security and performance concerns
  * and provide fixes. Note any issues you don't have time to fix.
  * TODO D: The list of available articles is hardcoded. Add code to get a

@@ -31,20 +31,93 @@
  *  functionality.
  */
 
+class HttpClient {
+	constructor(baseUrl) {
+		this.baseUrl = baseUrl;
+	}
+
+	async request(url, options	= {}) {
+		const headers = new Headers();
+		headers.append('Accept', 'application/json');
+
+		const defaultOptions = {
+			headers: headers,
+		};
+
+		return await fetch(this.baseUrl + url, {...defaultOptions, ...options});
+	}
+}
+
+
+class AutoComplete {
+	timer;
+
+	constructor(httpClient) {
+		this.httpClient = httpClient;
+	}
+
+	init(event, timeout = 200) {
+		const me = this;
+		const input = event.target;
+
+		clearTimeout(this.timer);
+		this.timer = setTimeout(async () => {
+			const res = await me.fetchRemote(event, input);
+
+			document.querySelectorAll('.auto-complete-list li').forEach(el => el.remove());
+			me.appendItemsToList(input, res);
+		}, timeout);
+	}
+
+	async fetchRemote(event, input, fromDate)  {
+		const url = '?prefixsearch=' + input.value + (fromDate ? '&fromDate=' + fromDate : '');
+		const res = await this.httpClient.request(url);
+
+		if (!res.ok) {
+			throw new Error('whoops something went wrong: ' + res.statusText);
+		}
+
+		return await res.json();
+	}
+
+	async appendItemsToList(input, data)  {
+		const me = this;
+		if (!data.content.length) {
+			return;
+		}
+
+		const containerElement = document.createElement('ul');
+		containerElement.style.display = 'block';
+		containerElement.classList.add('auto-complete-list');
+
+		data.content.forEach((item) => {
+			const listElement = document.createElement('li');
+			listElement.innerText = item.title;
+			listElement.dataset.modifiedAt = item.modifiedAt;
+			containerElement.appendChild(listElement);
+		});
+
+		containerElement.addEventListener('scroll', event=> me.onListItemsScroll(event, input))
+		input.closest('.form-group').appendChild(containerElement);
+	}
+}
+
+
+const apiUrl ='/api.php';
+const httpClient = new HttpClient(apiUrl);
+const autoComplete = new AutoComplete(httpClient);
+
 class Main {
 	init() {
-		const submitButton = document.querySelector( '.submit-button' );
-		const form = document.querySelector( 'form' );
+		this.initAutoComplete();
+	}
 
-		// Make form submit button work when submit is clicked.
-		submitButton.addEventListener( 'click', (e) => {
-			e.preventDefault();
-			form.submit();
+	initAutoComplete() {
+		document.querySelectorAll('input.auto-complete').forEach((input) => {
+			input.addEventListener('keyup', (event) => autoComplete.init(event, 200));
 		});
 	}
 }
 
-(function() {
-	const main = new Main();
-	main.init();
-}());
+const main = new Main();
+main.init();
