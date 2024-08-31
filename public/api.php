@@ -8,10 +8,6 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'boots
 
 $app = new App( new StorageService( BASE_ARTICLE_PATH ), new SanitizerService() );
 
-/**
- * TODO E: Document this code to make it more understandable for other developers.
- */
-
 // Consider a Rate Limiter to prevent DDoS attacks by blocking or delaying requests from a single IP address
 // It can be either adjusted on Nginx/Proxy server
 

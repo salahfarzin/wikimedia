@@ -1,18 +1,28 @@
 <?php
 
+use App\App;
+use App\Services\SanitizerService;
+use App\Services\StorageService;
 use joshtronic\LoremIpsum;
 
 require_once __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'bootstrap.php';
 
+$options = getopt( 'l::', [ 'limit::' ] );
+$limit = !empty( $options['limit'] ) ? (int)$options['limit'] : 10;
+
 $count = 0;
-// TODO: Make the number configurable, so that one can run `php seedContent.php --limit=100`
-for ( $i = 0; $i < 10; $i++ ) {
+
+$app = new App( new StorageService( BASE_ARTICLE_PATH ), new SanitizerService() );
+
+for ( $i = 0; $i < $limit; $i++ ) {
 	$loremIpsum = new LoremIpsum();
 	$loremIpsum->words();
 
-	file_put_contents( sprintf( "%s/%s", BASE_ARTICLE_PATH, $loremIpsum->word() ), $loremIpsum->paragraphs( 10 ) );
+	$name = $loremIpsum->word();
+	$app->save( $name, $loremIpsum->paragraphs( 10 ) );
 
-	echo "Creating article\n";
-	$count++;
+	echo sprintf( 'Creating article %s' . PHP_EOL, $name );
+	++$count;
 }
-echo "generated $count articles!";
+
+echo sprintf( 'generated %d articles!', $count );
