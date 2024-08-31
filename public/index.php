@@ -1,8 +1,6 @@
 <?php
 
 /**
- * TODO C: Review the index.php entrypoint for security and performance concerns
- * and provide fixes. Note any issues you don't have time to fix.
  * TODO D: The list of available articles is hardcoded. Add code to get a
  * dynamically generated list.
  * TODO E: Are there performance problems with the word count function? How
@@ -12,27 +10,26 @@
  */
 
 use App\App;
+use App\Services\SanitizerService;
+use App\Services\StorageService;
 
 require_once __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'bootstrap.php';
 
-$app = new App( BASE_ARTICLE_PATH );
+$app = new App( new StorageService( BASE_ARTICLE_PATH ), new SanitizerService() );
 
 // article title and body, title used as name of the file to store on the disk
-// potential security issues (XSS and directory traversing, etc.)
 $title = $body = '';
+// load article title and content
 if ( isset( $_GET['title'] ) ) {
 	$title = htmlentities( $_GET['title'] );
 	$body = $app->loadContent( $_GET );
-	$body = file_get_contents( sprintf( '%s/%s', BASE_ARTICLE_PATH, $title ) );
 }
 
+// instead of using $_GET/$_POST, better to create or use Request class to apply some policies
 // create/update articles on the disc as file
 if ( $_POST ) {
-	$app->save( sprintf( "%s/%s", BASE_ARTICLE_PATH, $_POST['title'] ), $_POST['body'] );
+	$app->save( $_POST['title'], $_POST['body'] );
 }
-
-// this should not be count here instead by ajax request and read from API
-$wordCount = $app->calculateWordCount();
 
 // views can be handled by view manager
 require_once __DIR__ . '/../views/index.html';

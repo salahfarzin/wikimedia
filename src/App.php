@@ -2,29 +2,38 @@
 
 namespace App;
 
+use App\Services\Exceptions\NotFoundException;
+use App\Services\SanitizerService;
+use App\Services\StorageService;
 use DirectoryIterator;
 
 class App {
 
 	/**
-	 * @param string $storagePath
+	 * @param StorageService $storageService
+	 * @param SanitizerService $sanitizerService
 	 */
-	public function __construct( private string $storagePath ) {
+	public function __construct(
+		private readonly StorageService $storageService,
+		private readonly SanitizerService $sanitizerService
+	) {
 	}
 
 	/**
 	 * Create/Update an article
 	 * Better to have a  storage class to handle the locations (HardDisk/S3/GoogleDrive/...)
 	 *
-	 * @param string $path
+	 * @param string $filename
 	 * @param string $contents
 	 *
 	 * @return string
 	 */
-	public function save( string $path, string $contents ): string {
-		file_put_contents( $path, $contents );
+	public function save( string $filename, string $contents ): string {
+		$filename = $this->sanitizerService->sanitizeFilename( $filename );
 
-		return sprintf( 'Saving article %s, success!', $path );
+		$this->storageService->putFile( $filename, $contents );
+
+		return sprintf( 'Saving article %s, success!', $filename );
 	}
 
 	/**
@@ -35,12 +44,12 @@ class App {
 	 * @return string
 	 */
 	public function loadContent( array $request ): string {
-		$filename = $request['title'] ?? null;
-		$path = sprintf( '%s/%s', $this->storagePath, $filename );
+		$filename = $this->sanitizerService->sanitizeFilename( $request['title'] ?? '' );
 
-		$content = '';
-		if ( file_exists( $path ) ) {
-			$content = file_get_contents( $path );
+		try {
+			$content = $this->storageService->loadFile( $filename );
+		} catch ( NotFoundException $exception ) {
+			$content = '';
 		}
 
 		return $content;
@@ -54,11 +63,11 @@ class App {
 	 * @return array
 	 */
 	public function loadList( array $request ): array {
-		$searchPrefix = trim( $request['prefixsearch'] );
+		$searchKeyword = trim( $request['search'] );
 
 		$articles = [];
-		foreach ( new DirectoryIterator( $this->storagePath ) as $file ) {
-			if ( $file->isDot() || !str_contains( strtolower( $file->getFilename() ), strtolower( $searchPrefix ) ) ) {
+		foreach ( new DirectoryIterator( $this->storageService->getBasePath() ) as $file ) {
+			if ( $file->isDot() || !str_contains( strtolower( $file->getFilename() ), strtolower( $searchKeyword ) ) ) {
 				continue;
 			}
 
@@ -71,20 +80,17 @@ class App {
 	/**
 	 * word count have performance issue as it load the whole content of file in memory at once
 	 *
-	 * @return string
+	 * @return int
 	 */
-	public function calculateWordCount(): string {
-		$wc = 0;
-		$dir = new DirectoryIterator( BASE_ARTICLE_PATH );
-
-		foreach ( $dir as $fileinfo ) {
-			if ( $fileinfo->isDot() ) {
+	public function calculateWordCount(): int {
+		$wordsCount = 0;
+		foreach ( new DirectoryIterator( $this->storageService->getBasePath() ) as $info ) {
+			if ( $info->isDot() ) {
 				continue;
 			}
-			$c = file_get_contents( BASE_ARTICLE_PATH . $fileinfo->getFilename() );
-			$ch = explode( " ", $c );
-			$wc += count( $ch );
+			$wordsCount += $this->storageService->calcWordsCount( $info->getFilename() );
 		}
-		return "$wc words written";
+
+		return $wordsCount;
 	}
 }
